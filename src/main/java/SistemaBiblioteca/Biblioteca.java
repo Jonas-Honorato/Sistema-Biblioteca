@@ -1,6 +1,5 @@
-package semIA;
+package SistemaBiblioteca;
 
-import java.sql.SQLOutput;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,12 +49,10 @@ public class Biblioteca {
         return null;
     }
 
-
     public boolean emprestarLivro(String titulo, int usuarioId) {
         Usuario usuario = buscarUsuarioPorId(usuarioId);
         Livro livro = buscarLivroPorTitulo(titulo);
 
-        // Validações básicas
         if (usuario == null) {
             System.out.println("Usuário com ID: " + usuarioId + " não está registrado");
             return false;
@@ -65,7 +62,6 @@ public class Biblioteca {
             return false;
         }
 
-        // Verifica se já existe empréstimo ativo para este livro
         for (Emprestimo emprestimo : emprestimos) {
             if (emprestimo.getLivro().equals(livro) && emprestimo.isAtivo()) {
                 System.out.println("Já existe um empréstimo ativo para este livro.");
@@ -73,11 +69,10 @@ public class Biblioteca {
             }
         }
 
-        // Se o livro está disponível, cria o empréstimo
         if (livro.emprestar()) {
             Emprestimo novoEmprestimo = new Emprestimo(livro, usuario);
-            emprestimos.add(novoEmprestimo); // adiciona ao histórico da biblioteca
-            usuario.adicionarLivroEmprestado(livro); // adiciona ao usuário
+            emprestimos.add(novoEmprestimo);
+            usuario.adicionarLivroEmprestado(livro);
 
             System.out.println("Livro '" + titulo + "' emprestado com sucesso para " + usuario.getNome() +
                     ". Devolução prevista: " + novoEmprestimo.getDataPrevistaDevolucao());
@@ -99,28 +94,23 @@ public class Biblioteca {
             return false;
         }
 
-        // Procurar o empréstimo ativo correspondente
         for (Emprestimo emprestimo : emprestimos) {
             if (emprestimo.getLivro().equals(livro) &&
                     emprestimo.getUsuario().equals(usuario) &&
                     emprestimo.isAtivo()) {
 
-                // Finaliza o empréstimo
                 emprestimo.finalizarEmprestimo();
 
-                // Marca o livro como disponível novamente
                 livro.devolver();
 
-                // Remove da lista de livros emprestados do usuário
                 usuario.removerLivroEmprestado(livro);
 
-                // Verifica atraso
                 if (emprestimo.getDataDevolucao().isAfter(emprestimo.getDataPrevistaDevolucao())) {
                     long diasAtraso = ChronoUnit.DAYS.between(
                             emprestimo.getDataPrevistaDevolucao(),
                             emprestimo.getDataDevolucao()
                     );
-                    double multa = diasAtraso * 2.0; // R$ 2 por dia
+                    double multa = diasAtraso * 2.0;
                     usuario.adicionarMulta(multa);
 
                     System.out.println("Livro devolvido com atraso de " + diasAtraso +
@@ -137,7 +127,7 @@ public class Biblioteca {
         System.out.println("Não existe empréstimo ativo para este livro/usuário.");
         return false;
     }
-    // Buscar livros por autor
+
     public List<Livro> buscarPorAutor(String autor) {
         List<Livro> resultado = new ArrayList<>();
         for (Livro livro : livros) {
@@ -148,7 +138,6 @@ public class Biblioteca {
         return resultado;
     }
 
-    // Listar livros disponíveis
     public List<Livro> listarLivrosDisponiveis() {
         List<Livro> disponiveis = new ArrayList<>();
         for (Livro livro : livros) {
@@ -159,34 +148,31 @@ public class Biblioteca {
         return disponiveis;
     }
 
-    // Listar empréstimos ativos
     public List<Emprestimo> listarEmprestimosAtivos() {
         List<Emprestimo> ativos = new ArrayList<>();
-        for (Emprestimo e : emprestimos) {
-            if (e.isAtivo()) {
-                ativos.add(e);
+        for (Emprestimo emprestimo : emprestimos) {
+            if (emprestimo.isAtivo()) {
+                ativos.add(emprestimo);
             }
         }
         return ativos;
     }
 
-    // Listar empréstimos por usuário
     public List<Emprestimo> listarEmprestimosPorUsuario(int usuarioId) {
         List<Emprestimo> resultado = new ArrayList<>();
-        for (Emprestimo e : emprestimos) {
-            if (e.getUsuario().getId() == usuarioId) {
-                resultado.add(e);
+        for (Emprestimo emprestimo : emprestimos) {
+            if (emprestimo.getUsuario().getId() == usuarioId) {
+                resultado.add(emprestimo);
             }
         }
         return resultado;
     }
 
-    // Listar usuários com multa
     public List<Usuario> listarUsuariosComMulta() {
         List<Usuario> resultado = new ArrayList<>();
-        for (Usuario u : usuarios) {
-            if (u.getMultaAcumulada() > 0) {
-                resultado.add(u);
+        for (Usuario usuario : usuarios) {
+            if (usuario.getMultaAcumulada() > 0) {
+                resultado.add(usuario);
             }
         }
         return resultado;
